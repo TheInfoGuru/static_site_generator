@@ -40,9 +40,5 @@ class ParentNode(HTMLNode):
         if not self.children:
             raise ValueError('Parent node must have children')
         
-        html_string = '' 
-        html_string = f'<{self.tag}{self.props_to_html()}>'
-        for node in self.children:
-            html_string += node.to_html()
-        html_string += f'</{self.tag}>'
-        return html_string
+        children_html = ''.join(child.to_html() for child in self.children)
+        return f'<{self.tag}{self.props_to_html()}>{children_html}</{self.tag}>'
