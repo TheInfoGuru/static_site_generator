@@ -85,6 +85,96 @@ class TestNodeConversion(unittest.TestCase):
         link_list = extract_markdown_links("This is text with a link to here and to youtube")
         self.assertEqual([], link_list)
 
+    def test_link_node_conversion(self):
+        node = TextNode(
+            "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
+            TextType.TEXT,
+        )
+
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(
+            [
+                TextNode("This is text with a link ", TextType.TEXT, None),
+                TextNode("to boot dev", TextType.LINK, "https://www.boot.dev"),
+                TextNode(" and ", TextType.TEXT, None),
+                TextNode("to youtube", TextType.LINK, "https://www.youtube.com/@bootdotdev")
+            ],
+            new_nodes
+        )
+
+    def test_link_node_conversion_no_links(self):
+        node = TextNode(
+            "This is text with no links to find.",
+            TextType.TEXT,
+        )
+
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(
+            [
+                TextNode("This is text with no links to find.", TextType.TEXT, None)
+            ],
+            new_nodes
+        )
+
+    def test_link_node_conversion_only_link(self):
+        node = TextNode(
+            "[to boot dev](https://www.boot.dev)",
+            TextType.TEXT,
+        )
+
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(
+            [
+                TextNode("to boot dev", TextType.LINK, "https://www.boot.dev"),
+            ],
+            new_nodes
+        )
+
+    def test_image_node_conversion_only_image(self):
+        node = TextNode(
+            "![to boot dev](https://www.boot.dev/pic.jpg)",
+            TextType.TEXT,
+        )
+
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(
+            [
+                TextNode("to boot dev", TextType.IMAGE, "https://www.boot.dev/pic.jpg"),
+            ],
+            new_nodes
+        )
+
+    def test_image_node_conversion_no_links(self):
+        node = TextNode(
+            "This is text with no images to find.",
+            TextType.TEXT,
+        )
+
+        new_nodes = split_nodes_image([node])
+        self.assertEqual(
+            [
+                TextNode("This is text with no images to find.", TextType.TEXT, None)
+            ],
+            new_nodes
+        )
+
+    def test_image_node_conversion(self):
+        node = TextNode(
+            "This is text with a link ![to boot dev](https://www.boot.dev/pic.jpg) and ![to youtube](https://www.youtube.com/@bootdotdev/mypic.png5)",
+            TextType.TEXT,
+        )
+
+        new_nodes = split_nodes_image([node])
+        
+        self.assertEqual(
+            [
+                TextNode("This is text with a link ", TextType.TEXT, None),
+                TextNode("to boot dev", TextType.IMAGE, "https://www.boot.dev/pic.jpg"),
+                TextNode(" and ", TextType.TEXT, None),
+                TextNode("to youtube", TextType.IMAGE, "https://www.youtube.com/@bootdotdev/mypic.png5")
+            ],
+            new_nodes
+        )
 
 
 if __name__ == "__main__":
