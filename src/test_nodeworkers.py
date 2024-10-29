@@ -176,6 +176,62 @@ class TestNodeConversion(unittest.TestCase):
             new_nodes
         )
 
+    def test_combined_conversion_one_of_each(self):
+        node_list = text_to_textnodes("This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)")
+        correct_list = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+
+        self.assertEqual(node_list, correct_list)
+
+    def test_combined_conversion_alternate_image_and_link(self):
+        node_list = text_to_textnodes("![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg)[link](https://boot.dev)![another image](http://image.com/if.jpg)[final link](http://www.goldman.com/)")
+        correct_list = [
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+            TextNode("another image", TextType.IMAGE, "http://image.com/if.jpg"),
+            TextNode("final link", TextType.LINK, "http://www.goldman.com/")
+        ]
+        correct_text = '[TextNode(obi wan image, TextType.IMAGE, https://i.imgur.com/fJRm4Vk.jpeg), TextNode(link, TextType.LINK, https://boot.dev), TextNode(another image, TextType.IMAGE, http://image.com/if.jpg), TextNode(final link, TextType.LINK, http://www.goldman.com/)]'
+        self.assertEqual(node_list, correct_list)
+        self.assertEqual(repr(node_list), correct_text)
+
+    def test_combined_conversion_double_image_and_link(self):
+        node_list = text_to_textnodes("![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg)![another image](http://image.com/if.jpg)[link](https://boot.dev)[final link](http://www.goldman.com/)")
+        correct_list = [
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode("another image", TextType.IMAGE, "http://image.com/if.jpg"),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+            TextNode("final link", TextType.LINK, "http://www.goldman.com/")
+        ]
+        correct_text = '[TextNode(obi wan image, TextType.IMAGE, https://i.imgur.com/fJRm4Vk.jpeg), TextNode(another image, TextType.IMAGE, http://image.com/if.jpg), TextNode(link, TextType.LINK, https://boot.dev), TextNode(final link, TextType.LINK, http://www.goldman.com/)]'
+        self.assertEqual(node_list, correct_list)
+        self.assertEqual(repr(node_list), correct_text)
+
+    def test_combined_conversion_no_image_or_link(self):
+        node_list = text_to_textnodes("This is **text** with an *italic* word and a `code block` and an ")
+        correct_list = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT)
+        ]
+        correct_text = '[TextNode(This is , TextType.TEXT, None), TextNode(text, TextType.BOLD, None), TextNode( with an , TextType.TEXT, None), TextNode(italic, TextType.ITALIC, None), TextNode( word and a , TextType.TEXT, None), TextNode(code block, TextType.CODE, None), TextNode( and an , TextType.TEXT, None)]'
+        self.maxDiff = None
+        self.assertEqual(node_list, correct_list)
+        self.assertEqual(repr(node_list), correct_text)
 
 if __name__ == "__main__":
     unittest.main()
